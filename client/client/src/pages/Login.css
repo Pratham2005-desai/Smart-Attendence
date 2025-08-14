@@ -1,0 +1,115 @@
+/* Background - Off White */
+.login-page {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f8f9fa; /* Soft off-white */
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Glass effect card */
+.login-card {
+  background: rgba(255, 255, 255, 0.7);
+  padding: 2rem;
+  border-radius: 20px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  text-align: center;
+  width: 350px;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.login-card h2 {
+  color: #003366;
+  margin-bottom: 0.5rem;
+}
+
+.login-subtitle {
+  color: rgba(0, 0, 0, 0.7);
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+/* Inputs */
+.login-card input {
+  width: 100%;
+  padding: 0.8rem;
+  margin-bottom: 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.1);
+  outline: none;
+  background: #ffffff;
+  color: #333;
+  transition: 0.3s ease;
+}
+
+.login-card input:focus {
+  border-color: #3399ff;
+  box-shadow: 0 0 8px rgba(51, 153, 255, 0.3);
+}
+
+/* Button */
+.login-card button {
+  width: 100%;
+  padding: 0.8rem;
+  background: #3399ff;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s ease;
+}
+
+.login-card button:hover {
+  background: #1a8cff;
+  transform: scale(1.05);
+}
+
+.login-message {
+  margin-top: 1rem;
+  color: #cc0000;
+  font-size: 0.85rem;
+}
+
+/* Navbar matching logo colors */
+.navbar-modern {
+  background: #003366;
+  padding: 0.8rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.navbar-modern img {
+  height: 40px;
+  margin-right: 10px;
+}
+
+.navbar-modern h3 {
+  color: #ffffff;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-links li a, .logout-btn {
+  color: #ffffff;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.nav-links li a:hover, .logout-btn:hover {
+  color: mediumspringgreen;
+}
+
+.logout-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}

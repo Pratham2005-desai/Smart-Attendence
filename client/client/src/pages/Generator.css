@@ -1,0 +1,37 @@
+.qr-generator-container {
+  max-width: 500px;
+  margin: 3rem auto;
+  padding: 2rem;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(0, 74, 173, 0.1);
+  text-align: center;
+}
+
+.qr-form input {
+  width: 100%;
+  padding: 0.8rem;
+  margin: 1rem 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.qr-form button {
+  padding: 0.8rem 1.5rem;
+  background: #004aad;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.qr-form button:hover {
+  background: #003c8f;
+}
+
+.qr-preview {
+  margin-top: 2rem;
+}
