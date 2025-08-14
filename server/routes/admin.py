@@ -1,12 +1,12 @@
-from flask import Blueprint, request, jsonify
-from app import db
+from flask import Blueprint, request, jsonify, send_file
 from werkzeug.security import generate_password_hash
 from functools import wraps
 from bson.objectid import ObjectId
 import datetime
 import io
 import pandas as pd
-from flask import send_file
+
+from db import db  # <-- IMPORTANT: import from db.py, NOT app.py
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/api/admin')
 
@@ -19,7 +19,6 @@ def admin_required(f):
             return jsonify({"error": "Unauthorized"}), 401
         token = auth_header.split(' ')[1]
         # TODO: Validate token and check if user is admin
-        # For now, allow all requests with token
         return f(*args, **kwargs)
     return decorated_function
 
@@ -35,7 +34,6 @@ def create_user():
     if not name or not email or not password or not role:
         return jsonify({"error": "Name, email, password, and role are required"}), 400
 
-    # ✅ Allow admin, teacher, student
     if role not in ['admin', 'teacher', 'student']:
         return jsonify({"error": "Role must be admin, teacher, or student"}), 400
 
@@ -44,7 +42,6 @@ def create_user():
         return jsonify({"error": "User with this email already exists"}), 400
 
     password_hash = generate_password_hash(password)
-
     user_data = {
         "name": name,
         "email": email,
@@ -52,57 +49,54 @@ def create_user():
         "password_hash": password_hash
     }
 
-    # Add collegeId if present
     college_id = data.get('collegeId')
     if college_id:
         user_data['collegeId'] = college_id
 
     db.users.insert_one(user_data)
-
     return jsonify({"message": f"{role.capitalize()} created user successfully"}), 201
-
 
 @admin_bp.route('/attendance', methods=['GET'])
 @admin_required
 def get_attendance():
-    attendance_records = list(db.attendance.find())
-    for record in attendance_records:
-        record['_id'] = str(record['_id'])
-        record['date'] = record['date'].strftime('%Y-%m-%d') if isinstance(record['date'], datetime.datetime) else record['date']
-    return jsonify(attendance_records), 200
+    records = list(db.attendance.find())
+    for r in records:
+        r['_id'] = str(r['_id'])
+        r['date'] = r['date'].strftime('%Y-%m-%d') if isinstance(r['date'], datetime.datetime) else r['date']
+    return jsonify(records), 200
 
 @admin_bp.route('/users', methods=['GET'])
 @admin_required
 def get_users():
     users = list(db.users.find())
-    for user in users:
-        user['_id'] = str(user['_id'])
+    for u in users:
+        u['_id'] = str(u['_id'])
     return jsonify(users), 200
 
 @admin_bp.route('/leaves', methods=['GET'])
 @admin_required
 def get_leaves():
     leaves = list(db.leaves.find())
-    for leave in leaves:
-        leave['_id'] = str(leave['_id'])
-        leave['date'] = leave['date'].strftime('%Y-%m-%d') if isinstance(leave['date'], datetime.datetime) else leave['date']
+    for l in leaves:
+        l['_id'] = str(l['_id'])
+        l['date'] = l['date'].strftime('%Y-%m-%d') if isinstance(l['date'], datetime.datetime) else l['date']
     return jsonify(leaves), 200
 
 @admin_bp.route('/export', methods=['GET'])
 @admin_required
 def export_attendance():
-    attendance_records = list(db.attendance.find())
+    records = list(db.attendance.find())
     data = []
-    for record in attendance_records:
+    for r in records:
         data.append({
-            'Student': record.get('studentId', ''),
-            'Date': record.get('date').strftime('%Y-%m-%d') if isinstance(record.get('date'), datetime.datetime) else record.get('date'),
-            'Status': record.get('status', ''),
-            'Class': record.get('class', '')
+            'Student': r.get('studentId', ''),
+            'Date': r.get('date').strftime('%Y-%m-%d') if isinstance(r.get('date'), datetime.datetime) else r.get('date'),
+            'Status': r.get('status', ''),
+            'Class': r.get('class', '')
         })
     df = pd.DataFrame(data)
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
         df.to_excel(writer, index=False, sheet_name='Attendance')
     output.seek(0)
-    return send_file(output, attachment_filename="attendance.xlsx", as_attachment=True)
+    return send_file(output, download_name="attendance.xlsx", as_attachment=True)
