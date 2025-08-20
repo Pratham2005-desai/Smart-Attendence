@@ -35,7 +35,17 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        logout,
+        collegeId: user?.collegeId,   // ✅ expose collegeId globally
+        name: user?.name,             // optional, if you want
+        role: user?.role,             // optional, for admin/student
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

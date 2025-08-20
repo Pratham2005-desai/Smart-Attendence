@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
-import Register from './Register';
 import './AdminDashboard.css';
 
 function AdminDashboard() {
@@ -33,6 +32,17 @@ function AdminDashboard() {
       link.click();
     } catch (err) {
       alert("Failed to export attendance: " + (err.response?.data?.error || err.message));
+    }
+  };
+
+  // ✅ New: update leave status
+  const updateLeaveStatus = async (leaveId, status) => {
+    try {
+      const res = await api.put(`/api/admin/leaves/${leaveId}`, { status });
+      console.log("✅ Leave updated:", res.data);
+      fetchAll(); // refresh list
+    } catch (err) {
+      alert("Failed to update leave: " + (err.response?.data?.error || err.message));
     }
   };
 
@@ -72,11 +82,41 @@ function AdminDashboard() {
       {/* Leaves Section */}
       <div className="dashboard-card">
         <h3>Leave Requests</h3>
-        {leaves.map(l => (
-          <div key={l._id} className="leave-item">
-            📝 {l.reason} by <strong>{l.studentId}</strong> on {l.date}
-          </div>
-        ))}
+        <table className="styled-table">
+          <thead>
+            <tr>
+              <th>College ID</th>
+              <th>Start</th>
+              <th>End</th>
+              <th>Reason</th>
+              <th>Status</th>
+              <th>Applied At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {leaves.map(l => (
+              <tr key={l._id}>
+                <td>{l.collegeId}</td>
+                <td>{l.startDate}</td>
+                <td>{l.endDate}</td>
+                <td>{l.reason}</td>
+                <td>{l.status}</td>
+                <td>{l.appliedAt || "-"}</td>
+                <td>
+                  {l.status === "pending" ? (
+                    <>
+                      <button onClick={() => updateLeaveStatus(l._id, "approved")}>Approve</button>
+                      <button onClick={() => updateLeaveStatus(l._id, "rejected")}>Reject</button>
+                    </>
+                  ) : (
+                    <span>{l.status}</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

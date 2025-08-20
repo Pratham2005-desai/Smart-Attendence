@@ -3,11 +3,10 @@ import axios from 'axios';
 
 function AdminRegister() {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
     collegeId: '',
+    email: '',
     password: '',
-    role: 'admin'
+    role: 'student'  // default role
   });
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,7 +20,7 @@ function AdminRegister() {
   };
 
   const validateForm = () => {
-    if (!formData.name.trim() || !formData.email.trim() || !formData.collegeId.trim() || !formData.password.trim()) {
+    if (!formData.email.trim() || !formData.collegeId.trim() || !formData.password.trim()) {
       setMessageType('error');
       setMessage('Please fill in all fields.');
       return false;
@@ -40,38 +39,42 @@ function AdminRegister() {
   };
 
   const handleRegister = async () => {
-    if (!validateForm()) return;
+  if (!validateForm()) return;
 
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('token');
-      const res = await axios.post(
-        `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/create-user`,
-        formData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+  try {
+    setLoading(true);
+    console.log("📤 Sending user data:", formData);  // 🟢 DEBUG
 
-      setMessageType('success');
-      setMessage(`${formData.role} account created successfully!`);
+    const res = await axios.post(
+      `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/create-user`,
+      formData,
+      { headers: { Authorization: "admin-secret" } }  // ✅
+    );
 
-      setFormData({
-        name: '',
-        email: '',
-        collegeId: '',
-        password: '',
-        role: 'admin'
-      });
-    } catch (err) {
-      setMessageType('error');
-      if (err.response?.data?.error) {
-        setMessage(`Error: ${err.response.data.error}`);
-      } else {
-        setMessage('Error during user creation');
-      }
-    } finally {
-      setLoading(false);
+    console.log("✅ Server response:", res.data);  // 🟢 DEBUG
+
+    setMessageType('success');
+    setMessage(`${formData.role} account created successfully!`);
+
+    setFormData({
+      collegeId: '',
+      email: '',
+      password: '',
+      role: 'student'
+    });
+  } catch (err) {
+    console.error("❌ Error during registration:", err.response?.data || err.message);  // 🟢 DEBUG
+    setMessageType('error');
+    if (err.response?.data?.error) {
+      setMessage(`Error: ${err.response.data.error}`);
+    } else {
+      setMessage('Error during user creation');
     }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div style={styles.page}>
@@ -80,9 +83,9 @@ function AdminRegister() {
 
         <input
           style={styles.input}
-          name="name"
-          placeholder="Name"
-          value={formData.name}
+          name="collegeId"
+          placeholder="College ID"
+          value={formData.collegeId}
           onChange={handleChange}
         />
         <input
@@ -90,13 +93,6 @@ function AdminRegister() {
           name="email"
           placeholder="Email"
           value={formData.email}
-          onChange={handleChange}
-        />
-        <input
-          style={styles.input}
-          name="collegeId"
-          placeholder="College ID"
-          value={formData.collegeId}
           onChange={handleChange}
         />
         <input
@@ -113,9 +109,9 @@ function AdminRegister() {
           value={formData.role}
           onChange={handleChange}
         >
-          <option value="admin">Admin</option>
-          <option value="teacher">Teacher</option>
           <option value="student">Student</option>
+          <option value="teacher">Teacher</option>
+          <option value="admin">Admin</option>
         </select>
 
         <button
@@ -144,7 +140,7 @@ function AdminRegister() {
 
 const styles = {
   page: {
-    backgroundColor: '#f8f8f8', // Off-white
+    backgroundColor: '#f8f8f8',
     minHeight: '100vh',
     display: 'flex',
     justifyContent: 'center',
@@ -161,7 +157,7 @@ const styles = {
   },
   title: {
     textAlign: 'center',
-    color: '#1e4e8c', // Blue tone
+    color: '#1e4e8c',
     marginBottom: '20px'
   },
   input: {
@@ -172,7 +168,7 @@ const styles = {
     fontSize: '14px'
   },
   button: {
-    backgroundColor: '#1e4e8c', // Blue tone
+    backgroundColor: '#1e4e8c',
     color: 'white',
     padding: '10px',
     borderRadius: '6px',

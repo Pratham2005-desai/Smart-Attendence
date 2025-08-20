@@ -1,40 +1,71 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
 const ApplyLeave = () => {
-  const { user } = useAuth();
+  console.log("🚀 ApplyLeave component mounted");
+  const { collegeId } = useAuth();   // ✅ Correct variable from AuthContext
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [reason, setReason] = useState('');
   const [message, setMessage] = useState('');
+  const [leaves, setLeaves] = useState([]);
+
+  // ✅ Fetch existing leaves on mount
+  useEffect(() => {
+    if (collegeId) {
+      fetchLeaveStatus();
+    }
+  }, [collegeId]);
+
+  const fetchLeaveStatus = async () => {
+    try {
+      console.log("📡 Fetching leave status for:", collegeId);
+      const response = await axios.get(`/api/leave/status/${collegeId}`);
+      console.log("✅ Leave status response:", response.data);
+      setLeaves(response.data.leaves || []);
+    } catch (error) {
+      console.error("🚨 Error fetching leave status:", error.response?.data || error.message);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage('');
+    console.log("🖊️ handleSubmit triggered");
+
+    const payload = {
+      collegeId: collegeId,   // ✅ fixed
+      startDate,
+      endDate,
+      reason,
+    };
+
+    console.log("📩 Submitting leave request:", payload);
+
     try {
-      const response = await axios.post('/api/leave/apply', {
-        userId: user?.id,
-        startDate,
-        endDate,
-        reason,
-      });
+      const response = await axios.post('/api/leave/apply', payload);
+      console.log("✅ Leave apply response:", response.data);
+
       if (response.status === 201) {
-        setMessage('Leave application submitted successfully.');
+        setMessage('✅ Leave application submitted successfully.');
         setStartDate('');
         setEndDate('');
         setReason('');
+        fetchLeaveStatus();  // Refresh list
       } else {
-        setMessage('Failed to submit leave application.');
+        setMessage('❌ Failed to submit leave application.');
       }
     } catch (error) {
-      setMessage('Error submitting leave application.');
+      console.error("🚨 Leave apply error:", error.response?.data || error.message);
+      setMessage('🚨 Error submitting leave application.');
     }
   };
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '600px', margin: '2rem auto', background: 'white', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+    <div style={{ padding: '2rem', maxWidth: '700px', margin: '2rem auto', background: 'white', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
       <h1>Apply for Leave</h1>
+
+      {/* Leave Form */}
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '1rem' }}>
           <label htmlFor="startDate">Start Date:</label><br />
@@ -73,7 +104,37 @@ const ApplyLeave = () => {
           Submit
         </button>
       </form>
-      {message && <p style={{ marginTop: '1rem' }}>{message}</p>}
+
+      {message && <p style={{ marginTop: '1rem', fontWeight: 'bold' }}>{message}</p>}
+
+      {/* Leave Status */}
+      <div style={{ marginTop: '2rem' }}>
+        <h2>My Leave Applications</h2>
+        {leaves.length === 0 ? (
+          <p>No leave applications found.</p>
+        ) : (
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+            <thead>
+              <tr style={{ backgroundColor: '#f2f2f2' }}>
+                <th style={{ border: '1px solid #ddd', padding: '8px' }}>Start Date</th>
+                <th style={{ border: '1px solid #ddd', padding: '8px' }}>End Date</th>
+                <th style={{ border: '1px solid #ddd', padding: '8px' }}>Reason</th>
+                <th style={{ border: '1px solid #ddd', padding: '8px' }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {leaves.map((leave, index) => (
+                <tr key={index}>
+                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{leave.startDate}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{leave.endDate}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{leave.reason}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{leave.status}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 };

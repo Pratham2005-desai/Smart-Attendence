@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app import db
+from db import db
 from datetime import datetime
 from math import radians, cos, sin, sqrt, atan2
 
